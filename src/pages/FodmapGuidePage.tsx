@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { foodData, type FodmapLevel, type FoodItem } from "../data/foodData";
+import { BottomBannerAd } from "../components/BottomBannerAd";
 import { useInAppAds } from "../hooks/useInAppAds";
 import "./FodmapGuidePage.css";
 
@@ -36,7 +37,8 @@ export function FodmapGuidePage() {
   const [detailStep, setDetailStep] = useState(0);
   const [showAdModal, setShowAdModal] = useState(false);
   const pendingFoodRef = useRef<FoodItem | null>(null);
-  const rewardedAd = useInAppAds(REWARDED_AD_GROUP_ID);
+  const adsReady = screen !== "home";
+  const rewardedAd = useInAppAds(REWARDED_AD_GROUP_ID, adsReady);
 
   function openDetail(food: FoodItem) {
     setSelectedFood(food);
@@ -308,6 +310,7 @@ export function FodmapGuidePage() {
           </>
         )}
       </div>
+      {adsReady ? <BottomBannerAd /> : null}
       {showAdModal && !adWatched ? (
         <div
           className="ad-modal-backdrop"

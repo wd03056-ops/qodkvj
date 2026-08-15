@@ -17,7 +17,7 @@ interface UseInAppAdsReturn {
 }
 
 // 참고: https://developers-apps-in-toss.toss.im/documentation/common/monetization/iaa/interstitial-rewarded-ad
-export function useInAppAds(adGroupId: string): UseInAppAdsReturn {
+export function useInAppAds(adGroupId: string, enabled = true): UseInAppAdsReturn {
   const [isAdLoaded, setIsAdLoaded] = useState(false);
   const [lastReward, setLastReward] = useState<Reward | null>(null);
   const [isSupported, setIsSupported] = useState(false);
@@ -50,6 +50,12 @@ export function useInAppAds(adGroupId: string): UseInAppAdsReturn {
   }, [adGroupId]);
 
   useEffect(() => {
+    if (!enabled) {
+      setIsSupported(false);
+      setIsAdLoaded(false);
+      return;
+    }
+
     try {
       const supported = loadFullScreenAd.isSupported();
       setIsSupported(supported);
@@ -68,7 +74,7 @@ export function useInAppAds(adGroupId: string): UseInAppAdsReturn {
         console.error("광고 정리(cleanup) 중 에러:", error);
       }
     };
-  }, [load]);
+  }, [enabled, load]);
 
   const showAd = useCallback(
     (onReward?: (reward: Reward) => void) => {
