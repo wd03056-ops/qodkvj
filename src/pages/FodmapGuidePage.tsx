@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { foodData, type FodmapLevel, type FoodItem } from "../data/foodData";
 import { useInAppAds } from "../hooks/useInAppAds";
 import "./FodmapGuidePage.css";
@@ -35,7 +35,19 @@ export function FodmapGuidePage() {
   const [adWatched, setAdWatched] = useState(false);
   const [detailStep, setDetailStep] = useState(0);
   const [showAdModal, setShowAdModal] = useState(false);
+  const pendingFoodRef = useRef<FoodItem | null>(null);
   const rewardedAd = useInAppAds(REWARDED_AD_GROUP_ID);
+
+  function openDetail(food: FoodItem) {
+    setSelectedFood(food);
+    setDetailStep(0);
+    setScreen("detail");
+  }
+
+  function closeAdModal() {
+    pendingFoodRef.current = null;
+    setShowAdModal(false);
+  }
 
   function handleAdBannerClick() {
     if (adWatched) return;
@@ -47,18 +59,22 @@ export function FodmapGuidePage() {
     rewardedAd.showAd(() => {
       setAdWatched(true);
       setShowAdModal(false);
+      const pending = pendingFoodRef.current;
+      pendingFoodRef.current = null;
+      if (pending) {
+        openDetail(pending);
+      }
     });
   }
 
   function handleOpenDetail(food: FoodItem) {
     if (!adWatched) {
+      pendingFoodRef.current = food;
       setShowAdModal(true);
       return;
     }
 
-    setSelectedFood(food);
-    setDetailStep(0);
-    setScreen("detail");
+    openDetail(food);
   }
 
   const normalizedQuery = submittedQuery.trim().toLowerCase();
@@ -295,7 +311,7 @@ export function FodmapGuidePage() {
       {showAdModal && !adWatched ? (
         <div
           className="ad-modal-backdrop"
-          onClick={() => setShowAdModal(false)}
+          onClick={closeAdModal}
           role="presentation"
         >
           <div
