@@ -14,7 +14,7 @@ export function BottomBannerAd() {
     }
 
     const attached = attachBanner(BANNER_AD_GROUP_ID, containerRef.current, {
-      theme: "auto",
+      theme: "light",
       tone: "blackAndWhite",
       variant: "expanded",
       callbacks: {

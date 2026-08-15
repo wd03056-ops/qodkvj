@@ -15,22 +15,6 @@ const DETAIL_TOPICS: { key: DetailTopicKey; title: string }[] = [
 ];
 
 const REWARDED_AD_GROUP_ID = "ait-ad-test-rewarded-id";
-const UNLOCK_STORAGE_KEY = "fodmap-detail-unlock-date";
-
-function todayKey() {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
-}
-
-function readUnlockedToday() {
-  try {
-    return localStorage.getItem(UNLOCK_STORAGE_KEY) === todayKey();
-  } catch {
-    return false;
-  }
-}
 
 function renderBold(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -48,63 +32,49 @@ export function FodmapGuidePage() {
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
-  const [unlockedToday, setUnlockedToday] = useState(readUnlockedToday);
+  const [adWatched, setAdWatched] = useState(false);
   const [detailStep, setDetailStep] = useState(0);
-  const pendingFoodRef = useRef<FoodItem | null>(null);
+  const [watchFirstNotice, setWatchFirstNotice] = useState(false);
+  const adNoticeRef = useRef<HTMLDivElement>(null);
   const rewardedAd = useInAppAds(REWARDED_AD_GROUP_ID);
 
-  function unlockForToday() {
-    setUnlockedToday(true);
-    try {
-      localStorage.setItem(UNLOCK_STORAGE_KEY, todayKey());
-    } catch {
-      // ignore storage errors
-    }
-  }
-
-  function requestRewardedUnlock(food?: FoodItem) {
-    if (unlockedToday) {
-      if (food) {
-        setSelectedFood(food);
-        setDetailStep(0);
-        setScreen("detail");
-      }
-      return;
-    }
-
-    pendingFoodRef.current = food ?? null;
-
-    if (!rewardedAd.isSupported) {
-      window.alert(
-        "보상형 광고는 토스 앱에서만 시청할 수 있어요. 콘솔 QR로 토스 앱에서 테스트해 주세요.",
-      );
-      return;
-    }
-
-    if (!rewardedAd.isAdLoaded) {
-      window.alert("광고를 준비하고 있어요. 잠시 후 다시 눌러 주세요.");
-      return;
-    }
-
-    rewardedAd.showAd(() => {
-      unlockForToday();
-      const pending = pendingFoodRef.current;
-      pendingFoodRef.current = null;
-      if (pending) {
-        setSelectedFood(pending);
-        setDetailStep(0);
-        setScreen("detail");
-      }
+  function scrollToAdNotice() {
+    requestAnimationFrame(() => {
+      adNoticeRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     });
   }
 
   function handleAdBannerClick() {
-    if (unlockedToday) return;
-    requestRewardedUnlock();
+    if (adWatched) return;
+
+    if (!rewardedAd.isSupported) {
+      return;
+    }
+
+    if (!rewardedAd.isAdLoaded) {
+      return;
+    }
+
+    rewardedAd.showAd(() => {
+      setAdWatched(true);
+      setWatchFirstNotice(false);
+    });
   }
 
   function handleOpenDetail(food: FoodItem) {
-    requestRewardedUnlock(food);
+    if (!adWatched) {
+      setWatchFirstNotice(true);
+      scrollToAdNotice();
+      return;
+    }
+
+    setWatchFirstNotice(false);
+    setSelectedFood(food);
+    setDetailStep(0);
+    setScreen("detail");
   }
 
   const normalizedQuery = submittedQuery.trim().toLowerCase();
@@ -113,13 +83,7 @@ export function FodmapGuidePage() {
     return foodData.filter((item) => {
       if (item.level !== level) return false;
       if (!normalizedQuery) return true;
-      return (
-        item.name.toLowerCase().includes(normalizedQuery) ||
-        item.category.toLowerCase().includes(normalizedQuery) ||
-        item.tip.join(" ").toLowerCase().includes(normalizedQuery) ||
-        item.analysis.join(" ").toLowerCase().includes(normalizedQuery) ||
-        item.serving.join(" ").toLowerCase().includes(normalizedQuery)
-      );
+      return item.name.toLowerCase().includes(normalizedQuery);
     });
   }, [level, normalizedQuery]);
 
@@ -206,7 +170,9 @@ export function FodmapGuidePage() {
               <button type="button" className="back-btn" onClick={goBack}>
                 ← 뒤로가기
               </button>
-              <h1 className="fodmap-title">모든 식품 목록</h1>
+              <h1 className="fodmap-title">
+                {level === "high" ? "고위험 식품 목록" : "저위험 식품 목록"}
+              </h1>
             </div>
 
             <form className="search-bar" onSubmit={handleSearch}>
@@ -236,27 +202,33 @@ export function FodmapGuidePage() {
               </button>
             </form>
 
-            <button
-              type="button"
-              className={`ad-banner${unlockedToday ? " unlocked" : ""}`}
-              onClick={handleAdBannerClick}
-              disabled={unlockedToday}
-            >
-              {unlockedToday ? (
+            <div className="ad-cta" ref={adNoticeRef}>
+              <div className={`ad-banner${adWatched ? " unlocked" : ""}`}>
+              {adWatched ? (
                 <span className="ad-banner-text">
-                  ✅ 상세 해설 무제한 열람 중 (오늘 하루)
+                  시청 완료! 이제 상세 해설을 볼 수 있어요
                 </span>
               ) : (
                 <>
                   <span className="ad-banner-text">
-                    🎁 광고 시청하고 오늘의 상세 해설 무제한 열람하기
+                    간단한 광고시청 후 모든 상세 설명이 열려요!
                   </span>
-                  <span className="ad-play">
-                    {rewardedAd.isAdLoaded ? "▶️ 영상 재생" : "광고 준비 중"}
-                  </span>
+                  <button
+                    type="button"
+                    className="ad-play"
+                    onClick={handleAdBannerClick}
+                  >
+                    {rewardedAd.isAdLoaded ? "광고보기" : "준비 중"}
+                  </button>
                 </>
               )}
-            </button>
+            </div>
+            {watchFirstNotice && !adWatched ? (
+              <p className="ad-watch-notice">
+                간단한 광고시청 후 모든 상세 설명이 열려요!
+              </p>
+            ) : null}
+            </div>
 
             {items.length === 0 ? (
               <p className="empty-result">검색 결과가 없습니다.</p>
