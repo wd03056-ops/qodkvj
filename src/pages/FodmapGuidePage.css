@@ -7,7 +7,7 @@
 
   min-height: 100svh;
   background-color: var(--bg-color);
-  padding: 16px 12px 32px;
+  padding: 16px 12px calc(32px + 96px);
   color: var(--text-main);
   text-align: left;
   box-sizing: border-box;
