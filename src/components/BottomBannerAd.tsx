@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useTossBanner } from "../hooks/useTossBanner";
 import "./BottomBannerAd.css";
 
-const BANNER_AD_GROUP_ID = "ait-ad-test-banner-id";
+const BANNER_AD_GROUP_ID = "ait.v2.live.e35a51be239e48e9";
 
 export function BottomBannerAd() {
   const containerRef = useRef<HTMLDivElement>(null);

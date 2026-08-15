@@ -14,7 +14,7 @@ const DETAIL_TOPICS: { key: DetailTopicKey; title: string }[] = [
   { key: "caution", title: "주의 사항" },
 ];
 
-const REWARDED_AD_GROUP_ID = "ait-ad-test-rewarded-id";
+const REWARDED_AD_GROUP_ID = "ait.v2.live.74e1b5d8e3da4fc4";
 
 function renderBold(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
