@@ -34,7 +34,7 @@ export function InAppAdsPage({ onBack }: InAppAdsPageProps) {
             <button
               type="button"
               className="iaa-section-button"
-              onClick={interstitial.showAd}
+              onClick={() => interstitial.showAd()}
               disabled={!interstitial.isAdLoaded}
             >
               {interstitial.isAdLoaded ? "보기" : "로딩 중"}
@@ -51,7 +51,7 @@ export function InAppAdsPage({ onBack }: InAppAdsPageProps) {
             <button
               type="button"
               className="iaa-section-button"
-              onClick={rewarded.showAd}
+              onClick={() => rewarded.showAd()}
               disabled={!rewarded.isAdLoaded}
             >
               {rewarded.isAdLoaded ? "보기" : "로딩 중"}
