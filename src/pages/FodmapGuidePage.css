@@ -247,13 +247,40 @@
   white-space: normal;
 }
 
-.ad-watch-notice {
-  margin: 0 0 14px;
+.ad-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(43, 45, 66, 0.45);
+}
+
+.ad-modal {
+  width: min(320px, 100%);
+  padding: 24px 20px 20px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
   text-align: center;
-  color: #d32f2f;
-  font-size: 13px;
+}
+
+.ad-modal-text {
+  margin: 0 0 16px;
+  font-family: "Pretendard", sans-serif;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.5;
+  color: var(--text-main);
   word-break: keep-all;
+}
+
+.ad-modal-play {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
 }
 
 .empty-result {

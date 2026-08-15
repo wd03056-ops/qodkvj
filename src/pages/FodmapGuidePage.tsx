@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { foodData, type FodmapLevel, type FoodItem } from "../data/foodData";
 import { useInAppAds } from "../hooks/useInAppAds";
 import "./FodmapGuidePage.css";
@@ -34,44 +34,28 @@ export function FodmapGuidePage() {
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [adWatched, setAdWatched] = useState(false);
   const [detailStep, setDetailStep] = useState(0);
-  const [watchFirstNotice, setWatchFirstNotice] = useState(false);
-  const adNoticeRef = useRef<HTMLDivElement>(null);
+  const [showAdModal, setShowAdModal] = useState(false);
   const rewardedAd = useInAppAds(REWARDED_AD_GROUP_ID);
-
-  function scrollToAdNotice() {
-    requestAnimationFrame(() => {
-      adNoticeRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-  }
 
   function handleAdBannerClick() {
     if (adWatched) return;
 
-    if (!rewardedAd.isSupported) {
-      return;
-    }
-
-    if (!rewardedAd.isAdLoaded) {
+    if (!rewardedAd.isSupported || !rewardedAd.isAdLoaded) {
       return;
     }
 
     rewardedAd.showAd(() => {
       setAdWatched(true);
-      setWatchFirstNotice(false);
+      setShowAdModal(false);
     });
   }
 
   function handleOpenDetail(food: FoodItem) {
     if (!adWatched) {
-      setWatchFirstNotice(true);
-      scrollToAdNotice();
+      setShowAdModal(true);
       return;
     }
 
-    setWatchFirstNotice(false);
     setSelectedFood(food);
     setDetailStep(0);
     setScreen("detail");
@@ -202,7 +186,7 @@ export function FodmapGuidePage() {
               </button>
             </form>
 
-            <div className="ad-cta" ref={adNoticeRef}>
+            <div className="ad-cta">
               <div className={`ad-banner${adWatched ? " unlocked" : ""}`}>
               {adWatched ? (
                 <span className="ad-banner-text">
@@ -223,11 +207,6 @@ export function FodmapGuidePage() {
                 </>
               )}
             </div>
-            {watchFirstNotice && !adWatched ? (
-              <p className="ad-watch-notice">
-                간단한 광고시청 후 모든 상세 설명이 열려요!
-              </p>
-            ) : null}
             </div>
 
             {items.length === 0 ? (
@@ -313,6 +292,31 @@ export function FodmapGuidePage() {
           </>
         )}
       </div>
+      {showAdModal && !adWatched ? (
+        <div
+          className="ad-modal-backdrop"
+          onClick={() => setShowAdModal(false)}
+          role="presentation"
+        >
+          <div
+            className="ad-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <p className="ad-modal-text">
+              간단한 광고 시청후 모든 상세설명이 열려요!
+            </p>
+            <button
+              type="button"
+              className="ad-play ad-modal-play"
+              onClick={handleAdBannerClick}
+            >
+              {rewardedAd.isAdLoaded ? "광고보기" : "준비 중"}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
