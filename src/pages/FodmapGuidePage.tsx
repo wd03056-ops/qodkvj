@@ -94,10 +94,10 @@ export function FodmapGuidePage() {
   }
 
   return (
-    <main className="fodmap-page">
-      <div className="fodmap-container">
+    <main className={`fodmap-page${screen === "home" ? " is-home" : ""}`}>
+      <div className={`fodmap-container${screen === "home" ? " is-home" : ""}`}>
         {screen === "home" && (
-          <>
+          <section className="home-panel">
             <h1 className="fodmap-title">과민성대장타파</h1>
             <p className="fodmap-subtitle">
               과민성대장증후군을 위한 포드맵(FODMAP) 식단
@@ -145,7 +145,7 @@ export function FodmapGuidePage() {
               <br />
               의사 또는 영양사와 상담하시길 권장합니다.
             </p>
-          </>
+          </section>
         )}
 
         {screen === "list" && (

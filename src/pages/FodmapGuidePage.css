@@ -19,6 +19,39 @@
   margin: 0 auto;
 }
 
+.fodmap-page.is-home {
+  display: flex;
+  min-height: 100svh;
+  padding-top: 12px;
+}
+
+.fodmap-container.is-home {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  align-items: center;
+}
+
+.home-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-panel .fodmap-desc {
+  margin-bottom: 20px;
+}
+
+.home-panel .choice-row {
+  margin-top: 8px;
+}
+
+.home-panel .disclaimer {
+  margin-top: 28px;
+  margin-bottom: 0;
+}
+
 .fodmap-title {
   text-align: center;
   margin: 0 0 10px;
