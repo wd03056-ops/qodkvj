@@ -150,7 +150,7 @@ export function FodmapGuidePage() {
       <div className="fodmap-container">
         {screen === "home" && (
           <>
-            <h1 className="fodmap-title">장 편한 가이드</h1>
+            <h1 className="fodmap-title">과민성대장타파</h1>
             <p className="fodmap-subtitle">
               과민성대장증후군을 위한 포드맵(FODMAP) 식단
             </p>
