@@ -8,10 +8,14 @@
   min-height: 100svh;
   background-color: var(--bg-color);
   font-family: var(--font-pretendard);
-  padding: 16px 12px calc(32px + 96px);
+  padding: 16px 12px 32px;
   color: var(--text-main);
   text-align: left;
   box-sizing: border-box;
+}
+
+.fodmap-page.has-banner {
+  padding-bottom: calc(32px + 96px);
 }
 
 .fodmap-container {

@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { graniteEvent, Screen } from "@apps-in-toss/web-framework";
 import { foodData, type FodmapLevel, type FoodItem } from "../data/foodData";
 import { BottomBannerAd } from "../components/BottomBannerAd";
 import { useInAppAds } from "../hooks/useInAppAds";
@@ -39,6 +40,10 @@ export function FodmapGuidePage() {
   const pendingFoodRef = useRef<FoodItem | null>(null);
   const adsReady = screen !== "home";
   const rewardedAd = useInAppAds(REWARDED_AD_GROUP_ID, adsReady);
+  const screenRef = useRef(screen);
+  const showAdModalRef = useRef(showAdModal);
+  screenRef.current = screen;
+  showAdModalRef.current = showAdModal;
 
   function openDetail(food: FoodItem) {
     setSelectedFood(food);
@@ -101,18 +106,57 @@ export function FodmapGuidePage() {
     setSubmittedQuery(query);
   }
 
-  function goBack() {
-    if (screen === "detail") {
-      setSelectedFood(null);
-      setDetailStep(0);
-      setScreen("list");
-      return;
-    }
+  function goHome() {
+    closeAdModal();
+    setSelectedFood(null);
+    setDetailStep(0);
     setScreen("home");
   }
 
+  useEffect(() => {
+    const unsubscribeBack = graniteEvent.addEventListener("backEvent", {
+      onEvent: () => {
+        if (showAdModalRef.current) {
+          closeAdModal();
+          return;
+        }
+        const current = screenRef.current;
+        if (current === "detail") {
+          setSelectedFood(null);
+          setDetailStep(0);
+          setScreen("list");
+          return;
+        }
+        if (current === "list") {
+          setScreen("home");
+          return;
+        }
+        void Screen.close();
+      },
+      onError: (error) => {
+        console.error("뒤로가기 처리 실패:", error);
+      },
+    });
+
+    const unsubscribeHome = graniteEvent.addEventListener("homeEvent", {
+      onEvent: () => {
+        goHome();
+      },
+      onError: (error) => {
+        console.error("홈 이동 처리 실패:", error);
+      },
+    });
+
+    return () => {
+      unsubscribeBack();
+      unsubscribeHome();
+    };
+  }, []);
+
   return (
-    <main className={`fodmap-page${screen === "home" ? " is-home" : ""}`}>
+    <main
+      className={`fodmap-page${screen === "home" ? " is-home" : ""}${screen === "list" ? " has-banner" : ""}`}
+    >
       <div className={`fodmap-container${screen === "home" ? " is-home" : ""}`}>
         {screen === "home" && (
           <section className="home-panel">
@@ -169,9 +213,6 @@ export function FodmapGuidePage() {
         {screen === "list" && (
           <>
             <div className="list-header">
-              <button type="button" className="back-btn" onClick={goBack}>
-                ← 뒤로가기
-              </button>
               <h1 className="fodmap-title">
                 {level === "high" ? "고위험 식품 목록" : "저위험 식품 목록"}
               </h1>
@@ -257,11 +298,7 @@ export function FodmapGuidePage() {
         )}
 
         {screen === "detail" && selectedFood && (
-          <>
-            <button type="button" className="back-btn" onClick={goBack}>
-              ← 뒤로가기
-            </button>
-            <article className="detail-card">
+          <article className="detail-card">
               <span
                 className={`risk-badge ${selectedFood.level === "high" ? "high" : "low"}`}
               >
@@ -307,10 +344,9 @@ export function FodmapGuidePage() {
                 </button>
               </div>
             </article>
-          </>
         )}
       </div>
-      {adsReady ? <BottomBannerAd /> : null}
+      {screen === "list" ? <BottomBannerAd /> : null}
       {showAdModal && !adWatched ? (
         <div
           className="ad-modal-backdrop"

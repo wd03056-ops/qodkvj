@@ -1,13 +1,16 @@
-import { defineConfig } from '@apps-in-toss/web-framework/config';
+import { defineConfig } from "@apps-in-toss/web-framework/config";
 
 export default defineConfig({
-  appName: 'qodkvk',
+  appName: "qodkvk",
   brand: {
-    primaryColor: '#3182F6',
+    primaryColor: "#3182F6",
   },
   navigationBar: {
     withTitle: true,
+    withBackButton: true,
+    withHomeButton: true,
+    theme: "light",
   },
   permissions: [],
-  webBundleDir: 'dist',
+  webBundleDir: "dist",
 });
